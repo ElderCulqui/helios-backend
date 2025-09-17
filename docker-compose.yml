@@ -1,0 +1,23 @@
+networks:
+  local_network:
+    external: true
+    name: local_network
+
+volumes:
+  root_helios:
+
+services:
+  api_helios:
+    image: webdevops/php-nginx:8.2-alpine
+    container_name: api_helios
+    working_dir: /app
+    restart: on-failure
+    expose:
+      - "80"
+    volumes:
+      - ./src:/app:delegated
+      - root_helios:/root
+    environment:
+      - WEB_DOCUMENT_ROOT=/app/public
+    networks:
+      - local_network
