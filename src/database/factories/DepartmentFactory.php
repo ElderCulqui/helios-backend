@@ -18,7 +18,7 @@ class DepartmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->word(),
+            'name' => $this->faker->word() . '_' . rand(1,1000),
             'parent_id' => null,
             'ambassador_name' => $this->faker->boolean(50) ? $this->faker->name() : null,
         ];
