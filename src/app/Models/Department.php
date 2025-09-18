@@ -39,6 +39,16 @@ class Department extends Model
         return $this->hasMany(Department::class, 'parent_id', 'id');
     }
 
+    public function getParentNameAttribute()
+    {
+        return $this->parent ? $this->parent->name : null;
+    }
+
+    public function getChildrenCountAttribute()
+    {
+        return $this->children()->count();
+    }
+
     /**
      * The "booted" method of the model.
      */

@@ -12,9 +12,42 @@ class DepartmentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $departments = Department::paginate(10);
+        $limit = $request->query('limit', 10);
+        $orderBy = $request->query('orderby', 'name');
+        $orderDirection = $request->query('order', 'asc');
+        $name = $request->query('name', null);
+        $nameArray = explode(',', $name);
+
+        $ambassadorName = $request->query('ambassador_name', null);
+        $level = $request->query('level', null);
+        $parentName = $request->query('parent_name', null);
+
+        $departments = Department::query()
+            ->when($name, function ($query) use ($nameArray) {
+                $query->whereIn('name', $nameArray);
+            })
+            ->when($ambassadorName, function ($query) use ($ambassadorName) {
+                $query->where('ambassador_name', 'like', '%' . $ambassadorName . '%');
+            })
+            ->when($level, function ($query) use ($level) {
+                $query->where('level', $level);
+            })
+            ->when($parentName, function ($query) use ($parentName) {
+                $query->whereHas('parent', function ($q) use ($parentName) {
+                    $q->where('name', 'like', '%' . $parentName . '%');
+                });
+            })
+            ->orderBy($orderBy, $orderDirection)
+            ->paginate($limit);
+
+        $modifiedDepartments = $departments->getCollection()->map(function ($item) use ($request) {
+            $item->append('parent_name', 'children_count');
+            return $item;
+        });
+        $departments->setCollection($modifiedDepartments);
+
         return response()->json($departments);
     }
 
